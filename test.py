@@ -1,3 +1,5 @@
+import os
+import glob
 from firebase import Firebase
 
 config = {
@@ -22,29 +24,50 @@ storage = firebase.storage()
 # print(a)
 
 
-all_users = db.child('Users').get()
-for user in all_users.each():
-    name = user.val()['name']
-    rfid = user.val()['rfid']
-    for i in range(0, 4):
-        storage.child(
-            f'Users/{name}-{rfid}/{rfid}.{i}').download(f'raw_dataset/{rfid}.{i}.jpg')
+# all_users = db.child('Users').get()
+# for user in all_users.each():
+#     name = user.val()['name']
+#     rfid = user.val()['rfid']
+#     for i in range(0, 4):
+#         storage.child(
+#             f'Users/{name}-{rfid}/{rfid}.{i}').download(f'raw_dataset/{rfid}.{i}.jpg')
 
 
-import cv2
-import glob
+# import cv2
+# import glob
 
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+# face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-count = 0
+# count = 0
 
-for filepath in glob.glob('raw_dataset/*.jpg'):
-    image = cv2.imread(filepath)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    for (x, y, w, h) in faces:
-        cv2.rectangle(image, (x, y), (x+w, y+h), (255, 0, 0), 2)
-        count += 1
-        roi_gray = gray[y:y+h, x:x+w]
-        cv2.imwrite(f"dataset/user.{str(count)}.jpg", roi_gray)
-        cv2.imshow("image", image)
+# for filepath in glob.glob('raw_dataset/*.jpg'):
+#     image = cv2.imread(filepath)
+#     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+#     for (x, y, w, h) in faces:
+#         cv2.rectangle(image, (x, y), (x+w, y+h), (255, 0, 0), 2)
+#         count += 1
+#         roi_gray = gray[y:y+h, x:x+w]
+#         cv2.imwrite(f"dataset/user.{str(count)}.jpg", roi_gray)
+#         cv2.imshow("image", image)
+
+# def get_user_by_rfid(rfid):
+#     all_users = db.child('Users').get()
+#     for user in all_users.each():
+#         if rfid == user.val()['rfid']:
+#             name = user.val()['name']
+#             print('name', name)
+
+
+# get_user_by_rfid('789456')
+
+def iterate():
+    img_dir = 'dataset'
+    imagePaths = [os.path.join(f) for f in os.listdir(img_dir)]
+
+    for filename in imagePaths:
+        # print(filename[f'{int(rfid)}.1.jpg'])
+        print(filename[0])
+
+
+iterate()
