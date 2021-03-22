@@ -36,8 +36,10 @@ def train_model():
         os.remove("models/model.yml")
         recognizer.write("models/model.yml")
         print("\nTraining success !")
+        print("\n{0} faces are learned.".format(len(np.unique(ids))))
         return jsonify({'success': True}), 200
     else:
         recognizer.write("models/model.yml")
         print("\nTraining success !")
+        print("\n{0} faces are learned.".format(len(np.unique(ids))))
         return jsonify({'success': True}), 200

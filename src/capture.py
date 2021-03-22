@@ -42,13 +42,14 @@ def capture(rfid):
                 roi_gray = gray[y:y+h, x:x+w]
                 cv2.imwrite(f"dataset/{rfid}.{str(count)}.jpg", roi_gray)
                 count += 1
-                if count > 30:
-                    break
 
             frame = cv2.imencode('.jpg', image)[1].tobytes()
             yield b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
             time.sleep(0.1)
         else:
+            break
+
+        if count > 30:
             break
 
     cap.release()
