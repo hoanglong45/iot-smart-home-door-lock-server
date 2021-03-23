@@ -28,7 +28,7 @@ face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 #         return jsonify({'success': 'uploaded'}), 200
 
 
-def capture(rfid):
+def capture(rfid, status):
     count = 0
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
@@ -49,12 +49,14 @@ def capture(rfid):
         else:
             break
 
-        if count > 30:
+        if status == 'cancel':
+            break
+        elif count > 30:
             break
 
     cap.release()
 
 
-@bp_capture.route('/api/capture/<rfid>')
-def video_feed(rfid):
-    return Response(capture(rfid), mimetype='multipart/x-mixed-replace; boundary=frame')
+@bp_capture.route('/api/capture/<rfid>/<status>')
+def video_feed(rfid, status):
+    return Response(capture(rfid, status), mimetype='multipart/x-mixed-replace; boundary=frame')
