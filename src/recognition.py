@@ -1,4 +1,3 @@
-# import time
 from flask import Blueprint, Response
 import cv2
 from firebase import Firebase
@@ -34,20 +33,10 @@ def get_user_by_rfid(rfid):
 
 def recognition():
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    # cap.set(3, 640)
-    # cap.set(4, 480)
-    # min_width = 0.1 * cap.get(3)
-    # max_width = 0.1 * cap.get(4)
 
     while cap.isOpened():
         ret, image = cap.read()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # face_rects = face_cascade.detectMultiScale(
-        #     gray,
-        #     scaleFactor=1.3,
-        #     minNeighbors=5,
-        #     minSize=(int(min_width), int(max_width))
-        # )
         face_rects = face_cascade.detectMultiScale(gray, 1.3, 5)
         if ret:
             for (x, y, w, h) in face_rects:
@@ -70,7 +59,7 @@ def recognition():
                             font, 1, (255, 255, 0), 1)
             frame = cv2.imencode('.jpg', image)[1].tobytes()
             yield b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
-            # time.sleep(0.1)
+
         else:
             break
 

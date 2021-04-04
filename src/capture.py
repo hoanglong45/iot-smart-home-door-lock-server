@@ -1,7 +1,6 @@
 import cv2
-import os
 import time
-from flask import Blueprint, Response, jsonify
+from flask import Blueprint, Response
 from firebase import Firebase
 
 config = {
@@ -19,42 +18,35 @@ storage = firebase.storage()
 bp_capture = Blueprint('capture', __name__)
 face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
-# @bp_capture.route('/api/capture/<rfid>/upload')
-# def upload_image(rfid):
-#     directory = 'dataset'
-#     for filename in os.listdir(directory):
-#         if filename.endswith('.jpg'):
-#             storage.child(f'{rfid}.jpg').put(f'{rfid}.1.jpg')
-#         return jsonify({'success': 'uploaded'}), 200
-
 
 def capture(rfid, status):
     count = 0
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    try:
+        while cap.isOpened():
+            ret, image = cap.read()
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            face_rects = face_cascade.detectMultiScale(gray, 1.3, 5)
+            if ret:
+                for (x, y, w, h) in face_rects:
+                    cv2.rectangle(image, (x, y), (x + w, y + h),
+                                  (0, 255, 0), 2)
+                    roi_gray = gray[y:y+h, x:x+w]
+                    cv2.imwrite(f"dataset/{rfid}.{str(count)}.jpg", roi_gray)
+                    count += 1
 
-    while cap.isOpened():
-        ret, image = cap.read()
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        face_rects = face_cascade.detectMultiScale(gray, 1.3, 5)
-        if ret:
-            for (x, y, w, h) in face_rects:
-                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                roi_gray = gray[y:y+h, x:x+w]
-                cv2.imwrite(f"dataset/{rfid}.{str(count)}.jpg", roi_gray)
-                count += 1
+                frame = cv2.imencode('.jpg', image)[1].tobytes()
+                yield b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
+                time.sleep(0.1)
+            else:
+                break
 
-            frame = cv2.imencode('.jpg', image)[1].tobytes()
-            yield b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
-            time.sleep(0.1)
-        else:
-            break
-
-        if status == 'cancel':
-            break
-        elif count > 30:
-            break
-
-    cap.release()
+            if status == 'cancel':
+                break
+            elif count > 30:
+                break
+    except Exception as e:
+        print(e)
 
 
 @bp_capture.route('/api/capture/<rfid>/<status>')

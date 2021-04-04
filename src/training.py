@@ -3,9 +3,21 @@ import cv2
 import os
 import numpy as np
 from PIL import Image
+from firebase import Firebase
+
+config = {
+    "apiKey": "AIzaSyCfTKQ-5sDNvN3QfC6S4oqeKOnbEv7AxzE",
+    "authDomain": "iot-smart-home-door-lock-7ccc9.firebaseapp.com",
+    "databaseURL": "https://iot-smart-home-door-lock-7ccc9.firebaseio.com",
+    "projectId": "iot-smart-home-door-lock-7ccc9",
+    "storageBucket": "iot-smart-home-door-lock-7ccc9.appspot.com",
+    "messagingSenderId": "513607106040",
+    "appId": "1:513607106040:web:d627644390357454e76a0d"
+}
 
 bp_training = Blueprint('training', __name__)
-
+firebase = Firebase(config)
+storage = firebase.storage()
 img_dir = "dataset"
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
@@ -29,17 +41,15 @@ def getImageAndLabels(img_dir):
 
 @bp_training.route('/api/training')
 def train_model():
-    print("\nFace training. please wait...")
-    faces, ids = getImageAndLabels(img_dir)
-    recognizer.train(faces, np.array(ids))
-    if os.path.isfile("models/model.yml") == True:
-        os.remove("models/model.yml")
-        recognizer.write("models/model.yml")
+    try:
+        print("\nFace training. please wait...")
+        faces, ids = getImageAndLabels(img_dir)
+        recognizer.train(faces, np.array(ids))
+        recognizer.write(f"models/model.yml")
         print("\nTraining success !")
         print("\n{0} faces are learned.".format(len(np.unique(ids))))
+        storage.child('model.yml').put(f'models/model.yml')
+        print('Uploaded')
         return jsonify({'success': True}), 200
-    else:
-        recognizer.write("models/model.yml")
-        print("\nTraining success !")
-        print("\n{0} faces are learned.".format(len(np.unique(ids))))
-        return jsonify({'success': True}), 200
+    except Exception as e:
+        print(e)
