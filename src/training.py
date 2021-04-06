@@ -45,11 +45,20 @@ def train_model():
         print("\nFace training. please wait...")
         faces, ids = getImageAndLabels(img_dir)
         recognizer.train(faces, np.array(ids))
-        recognizer.write(f"models/model.yml")
-        print("\nTraining success !")
-        print("\n{0} faces are learned.".format(len(np.unique(ids))))
-        storage.child('model.yml').put(f'models/model.yml')
-        print('Uploaded')
-        return jsonify({'success': True}), 200
+        if os.path.isfile("models/model.yml") == True:
+            os.remove("models/model.yml")
+            recognizer.write("models/model.yml")
+            print("\nTraining success !")
+            # print("\n{0} faces are learned.".format(len(np.unique(ids))))
+            storage.child('model.yml').put('models/model.yml')
+            print('Uploaded the model')
+            return jsonify({'success': True}), 200
+        else:
+            recognizer.write("models/model.yml")
+            print("\nTraining success !")
+            storage.child('model.yml').put('models/model.yml')
+            print('Uploaded the model')
+            # print("\n{0} faces are learned.".format(len(np.unique(ids))))
+            return jsonify({'success': True}), 200
     except Exception as e:
         print(e)
